@@ -1189,6 +1189,7 @@ function rptSummary(W) {
     const d = g.A - g.P, lines = (N[g.key] && N[g.key].length) ? N[g.key].map(t => '- ' + t) : ['-ไม่มีการทำงาน'];
     L.push('', g.label, `P=${f(g.P)}(at date), A=${f(g.A)}, Diff:=${f(d)}${dot(d)}`); lines.forEach(t => L.push(t));
   });
+  L.push('', '🥸🕶️‼️Schedule➡️  https://moneykullathon.github.io/NSR4239/', '🥸🕶️‼️Layout➡️  https://moneykullathon.github.io/NSR4239/layout.html');
   const cm = (P.commit || []).filter(c => !c.st && c.f <= n2d(W.n + 3) && c.f >= n2d(W.n - 7));
   if (cm.length) { L.push('', '📋 งานที่ผู้รับเหมาย่อยรับปาก (ติดตาม)'); cm.sort((x, y) => x.f < y.f ? -1 : 1).forEach(c => L.push(`- ${dd(c.f)} ${c.txt}${c.f < W.rep ? ' ⚠️ เลยกำหนด' : ''}`)); }
   return L.join('\n');
