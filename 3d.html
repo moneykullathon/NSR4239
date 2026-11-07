@@ -1,0 +1,488 @@
+<title>NSR4239 GIS Building 4D</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: full-bleed 3D viewport; floating title card top-left, activity panel right (bottom sheet on phones), timeline bar along the bottom */
+:root{
+  --bg:#e9edf0; --sky:#dfe6ea; --panel:rgba(250,251,252,.94); --line:#c9d1d7; --fg:#18232c; --mut:#5d6b76;
+  --accent:#c2410c; --done:#3f9b5a; --now:#2f6fd6; --fc:#d9a13b; --late:#d64545; --ghost:#8a96a0;
+  --f-disp:"Chakra Petch","IBM Plex Sans Thai",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans Thai",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f161c; --sky:#131c23; --panel:rgba(22,31,39,.93); --line:#2b3944; --fg:#e4eaee; --mut:#93a2ad;
+  --accent:#f08a4b; --done:#4fb56b; --now:#5b8ff0; --fc:#e3b04f; --late:#ef6262; --ghost:#6f7c87; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f161c; --sky:#131c23; --panel:rgba(22,31,39,.93); --line:#2b3944; --fg:#e4eaee; --mut:#93a2ad;
+  --accent:#f08a4b; --done:#4fb56b; --now:#5b8ff0; --fc:#e3b04f; --late:#ef6262; --ghost:#6f7c87; color-scheme:dark}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font:14px/1.45 var(--f-body);overflow:hidden}
+#cv{position:fixed;inset:0;display:block;width:100%;height:100%;touch-action:none}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;backdrop-filter:blur(6px)}
+#head{position:fixed;top:calc(env(safe-area-inset-top,0px) + 12px);left:max(16px,env(safe-area-inset-left,0px));padding:12px 14px;max-width:min(420px,calc(100% - 32px));display:grid;gap:6px}
+#head .eyebrow{font:600 11px/1 var(--f-mono);letter-spacing:.08em;color:var(--accent);text-transform:uppercase}
+#head h1{margin:0;font:600 20px/1.15 var(--f-disp);text-wrap:balance}
+#date{font:600 26px/1 var(--f-mono);font-variant-numeric:tabular-nums}
+#date small{font:500 12px var(--f-body);color:var(--mut);margin-left:6px}
+.kp{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--mut)}
+.kp b{font:600 13px var(--f-mono);color:var(--fg)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+#side{position:fixed;top:calc(env(safe-area-inset-top,0px) + 12px);right:max(16px,env(safe-area-inset-right,0px));width:330px;max-height:calc(100% - 150px);display:flex;flex-direction:column;overflow:hidden}
+#side h2{margin:0;padding:10px 12px 6px;font:600 13px var(--f-disp);letter-spacing:.03em;display:flex;justify-content:space-between;align-items:center}
+#side h2 span{font:400 11px var(--f-body);color:var(--mut)}
+#list{overflow:auto;padding:0 6px 8px}
+.row{display:grid;grid-template-columns:48px 1fr 92px;gap:6px;align-items:center;padding:5px 6px;border-radius:6px;cursor:pointer;border:1px solid transparent}
+.row:hover,.row:focus-visible{border-color:var(--line);outline:none}
+.row.sel{border-color:var(--accent)}
+.row .id{font:600 11px var(--f-mono);color:var(--mut)}
+.row .nm{font-size:12px;line-height:1.25;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .pc{font:400 11px var(--f-mono);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.row .bar{grid-column:2/4;height:6px;border-radius:3px;background:color-mix(in srgb,var(--ghost) 25%,transparent);position:relative;overflow:hidden}
+.row .bar .p{position:absolute;left:0;top:0;bottom:3px;background:var(--mut);opacity:.55}
+.row .bar .a{position:absolute;left:0;bottom:0;top:3px;background:var(--done)}
+.grp{font:600 10.5px var(--f-mono);letter-spacing:.08em;color:var(--mut);padding:8px 6px 2px;text-transform:uppercase}
+#bar{position:fixed;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 12px);padding:10px 12px;display:grid;gap:8px}
+.ctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button,.btn{font:500 12.5px var(--f-body);color:var(--fg);background:transparent;border:0;padding:6px 10px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.btn{border:1px solid var(--line);border-radius:7px}
+.btn:hover,.seg button:hover{background:color-mix(in srgb,var(--fg) 8%,transparent)}
+.seg button[aria-pressed="true"]:hover{background:var(--fg)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.tl{position:relative}
+#slider{width:100%;accent-color:var(--accent);margin:0}
+#ddmark{position:absolute;top:-4px;width:2px;height:22px;background:var(--accent);pointer-events:none}
+#ddlab{position:absolute;top:14px;font:600 10px var(--f-mono);color:var(--accent);transform:translateX(-50%);white-space:nowrap;pointer-events:none}
+.ticks{margin-top:10px;display:flex;justify-content:space-between;font:400 10.5px var(--f-mono);color:var(--mut)}
+label.tg{display:inline-flex;gap:5px;align-items:center;font-size:12.5px;cursor:pointer}
+#note{font-size:11px;color:var(--mut)}
+#tog{font-size:11.5px;padding:3px 8px}
+#side.closed #list{display:none}
+@media (max-width:820px){
+  #side{top:calc(env(safe-area-inset-top,0px) + 196px);left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));width:auto;max-height:38%}
+  #head{padding:10px 12px}
+  #head h1{font-size:16px}
+  #date{font-size:20px}
+  #note{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+
+<canvas id="cv" aria-label="โมเดล 3 มิติ อาคาร GIS"></canvas>
+
+<div id="head" class="card">
+  <div class="eyebrow">NSR4239 · 230/115 kV Nakhon Si Thammarat · 4D</div>
+  <h1>อาคาร GIS (1C3-1) — ความคืบหน้าตามแผนงาน</h1>
+  <div id="date">—</div>
+  <div class="kp" id="kp"></div>
+  <div class="legend" id="legend"></div>
+</div>
+
+<div id="side" class="card">
+  <h2>กิจกรรมก่อสร้างอาคาร <span>A จริง / P แผน</span> <button class="btn" id="tog" aria-expanded="true">ซ่อน</button></h2>
+  <div id="list" role="list"></div>
+</div>
+
+<div id="bar" class="card">
+  <div class="ctl">
+    <button class="btn" id="play" aria-label="เล่น">▶ เล่น</button>
+    <div class="seg" id="mode" role="group" aria-label="โหมดแสดงผล">
+      <button data-m="act" aria-pressed="true">สถานะจริง</button>
+      <button data-m="cmp" aria-pressed="false">แผน vs จริง</button>
+      <button data-m="plan" aria-pressed="false">ตามแผน</button>
+      <button data-m="fin" aria-pressed="false">ภาพเสมือนจริง</button>
+    </div>
+    <div class="seg" id="per" role="group" aria-label="ช่วงเวลา">
+      <button data-p="7" aria-pressed="true">สัปดาห์</button>
+      <button data-p="m" aria-pressed="false">เดือน</button>
+    </div>
+    <div class="seg" id="view" role="group" aria-label="มุมกล้อง">
+      <button data-v="iso" aria-pressed="false">3D</button>
+      <button data-v="front" aria-pressed="false">ด้าน D</button>
+      <button data-v="end" aria-pressed="false">ด้านสกัด</button>
+      <button data-v="top" aria-pressed="false">ผัง</button>
+    </div>
+    <button class="btn" id="bDD">Data date</button>
+    <button class="btn" id="bEnd">เสร็จสมบูรณ์</button>
+    <label class="tg"><input type="checkbox" id="cGhost" checked> แสดงงานที่ยังไม่สร้าง</label>
+    <label class="tg"><input type="checkbox" id="cCut"> ตัดหน้าตัด</label>
+    <label class="tg"><input type="checkbox" id="cX"> มุมมองใต้ดิน</label>
+    <label class="tg"><input type="checkbox" id="cGis" checked> อุปกรณ์ GIS</label>
+    <span id="exp" hidden><button class="btn" id="bPng">PNG</button> <button class="btn" id="bGlb">GLB</button></span>
+  </div>
+  <div class="tl"><input type="range" id="slider" min="0" max="100" value="0" aria-label="วันที่"><div id="ddmark"></div><div id="ddlab">DATA DATE</div></div>
+  <div class="ticks" id="ticks"></div>
+  <div id="note">โมเดลมวลอาคาร (LOD 200) จากแบบ ITE-NT-GIS-8-01A · ระดับพื้น +0.20 / +3.40 / +8.50 / +13.50 / +16.20 / +21.20 / +26.20 / หลังคา +30.75 · ลำดับงานภายในกิจกรรมสมมติไล่ตามแนว Grid 0→15 · อุปกรณ์ GIS เป็นภาพประกอบ</div>
+</div>
+
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script id="data" type="application/json">{"dataDate":"2026-11-08","projFinish":"2028-05-18","acts":[{"id":"A4100","n":"Piling incl. dowel bar & pile cut-off","pct":1,"as":"2026-02-03","af":"2026-08-16","bs":"2026-01-15","bf":"2026-03-14","s":"2026-02-03","f":"2026-08-16","crit":false,"d":{}},{"id":"A4110","n":"Footings – excavation, lean, rebar/form, concrete","pct":0.77901,"as":"2026-03-05","af":null,"bs":"2026-03-02","bf":"2026-04-30","s":"2026-03-05","f":"2026-11-19","crit":true,"tf":-216,"d":{"2026-10-18":0.007887,"2026-10-30":0.00338,"2026-10-31":0.000563,"2026-11-01":0.003944,"2026-11-02":0.005915,"2026-11-03":0.005915,"2026-11-04":0.005915,"2026-11-05":0.003944}},{"id":"A4120","n":"Backfill & compaction to ground floor","pct":0.5059,"as":"2026-04-16","af":null,"bs":"2026-04-16","bf":"2026-05-15","s":"2026-04-16","f":"2026-11-21","crit":true,"tf":-196,"d":{"2026-10-18":0.04507,"2026-10-22":0.006338,"2026-10-23":0.006338,"2026-10-24":0.028873,"2026-10-26":0.040141,"2026-10-27":0.033803}},{"id":"A4130","n":"Ground floor EL.+0.00 – beams, slab, columns, lift wall","pct":0.066191,"as":"2026-06-24","af":null,"bs":"2026-05-01","bf":"2026-06-06","s":"2026-06-24","f":"2026-12-11","crit":true,"tf":-186,"d":{"2026-11-02":0.004993}},{"id":"A4140","n":"1st floor EL.+2.50 – beams, slab, columns, stairs","pct":0,"as":null,"af":null,"bs":"2026-06-08","bf":"2026-07-11","s":"2026-12-12","f":"2027-01-18","crit":true,"tf":-186,"d":{}},{"id":"A4150","n":"2nd floor EL.+7.50 – beams, slab, columns, stairs","pct":0,"as":null,"af":null,"bs":"2026-07-13","bf":"2026-08-15","s":"2027-01-19","f":"2027-02-18","crit":true,"tf":-186,"d":{}},{"id":"A4160","n":"3rd floor EL.+13.50 – beams, slab, columns, stairs","pct":0,"as":null,"af":null,"bs":"2026-08-17","bf":"2026-09-19","s":"2027-02-19","f":"2027-03-26","crit":true,"tf":-186,"d":{}},{"id":"A4170","n":"4th floor EL.+16.20 – beams, slab, columns, stairs","pct":0,"as":null,"af":null,"bs":"2026-09-21","bf":"2026-10-24","s":"2027-03-27","f":"2027-05-05","crit":true,"tf":-186,"d":{}},{"id":"A4180","n":"Mezzanine EL.+21.20 – structure","pct":0,"as":null,"af":null,"bs":"2026-10-26","bf":"2026-11-21","s":"2027-05-06","f":"2027-06-04","crit":true,"tf":-186,"d":{}},{"id":"A4190","n":"Mezzanine EL.+26.20 – structure","pct":0,"as":null,"af":null,"bs":"2026-11-23","bf":"2026-12-19","s":"2027-06-05","f":"2027-06-29","crit":true,"tf":-186,"d":{}},{"id":"A4200","n":"Roof EL.+30.25 – RC beam/slab, parapet & roof steel","pct":0,"as":null,"af":null,"bs":"2026-12-21","bf":"2027-01-30","s":"2027-06-30","f":"2027-08-09","crit":true,"tf":-186,"d":{}},{"id":"A4210","n":"Fire exit stairs, loading ramp & crane walkways","pct":0,"as":null,"af":null,"bs":"2026-11-02","bf":"2027-02-27","s":"2027-03-04","f":"2027-07-02","crit":true,"tf":-97,"d":{}},{"id":"A4300","n":"External & internal walls W1–W6 (ACP, plastered AAC, louvers)","pct":0,"as":null,"af":null,"bs":"2026-09-01","bf":"2027-02-27","s":"2027-01-07","f":"2027-07-07","crit":true,"tf":-32,"d":{}},{"id":"A4310","n":"Metal sheet roof & fireproofing of roof steel","pct":0,"as":null,"af":null,"bs":"2027-01-15","bf":"2027-03-15","s":"2027-08-10","f":"2027-10-07","crit":true,"tf":-186,"d":{}},{"id":"A4320","n":"Ceilings C1–C5","pct":0,"as":null,"af":null,"bs":"2027-02-01","bf":"2027-04-30","s":"2027-08-23","f":"2027-11-16","crit":true,"tf":-186,"d":{}},{"id":"A4330","n":"Floor finishes F1–F11 (access floor, epoxy, PVC, tiles)","pct":0,"as":null,"af":null,"bs":"2027-02-15","bf":"2027-05-31","s":"2027-09-09","f":"2027-12-18","crit":true,"tf":-186,"d":{}},{"id":"A4340","n":"Doors & windows D1–D19 / W1–W16","pct":0,"as":null,"af":null,"bs":"2027-03-01","bf":"2027-06-15","s":"2027-02-24","f":"2027-06-10","crit":true,"tf":-28,"d":{}},{"id":"A4350","n":"Interior – furniture, signboards & room name signs","pct":0,"as":null,"af":null,"bs":"2027-06-01","bf":"2027-07-31","s":"2027-12-20","f":"2028-02-18","crit":true,"tf":-115,"d":{}},{"id":"A4500","n":"Electrical – conduit, cable tray & building ground grid","pct":0,"as":null,"af":null,"bs":"2026-08-03","bf":"2027-03-31","s":"2026-11-09","f":"2027-07-13","crit":true,"tf":-56,"d":{}},{"id":"A4510","n":"Electrical – lighting, power supply, telephone & LPS","pct":0,"as":null,"af":null,"bs":"2027-01-04","bf":"2027-06-30","s":"2027-06-09","f":"2027-11-27","crit":true,"tf":-48,"d":{}},{"id":"A4520","n":"Mechanical – travelling cranes no.1 & no.2","pct":0,"as":null,"af":null,"bs":"2027-02-01","bf":"2027-03-31","s":"2027-08-23","f":"2027-10-20","crit":true,"tf":-138,"d":{}},{"id":"A4530","n":"Mechanical – elevator","pct":0,"as":null,"af":null,"bs":"2027-03-01","bf":"2027-05-31","s":"2027-06-30","f":"2027-09-23","crit":false,"tf":6,"d":{}},{"id":"A4540","n":"Sanitary – sanitary ware, water, waste, vent & pumping","pct":0,"as":null,"af":null,"bs":"2027-02-01","bf":"2027-06-30","s":"2027-02-11","f":"2027-05-24","crit":false,"tf":59,"d":{}}]}</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const DATA = JSON.parse(document.getElementById('data').textContent);
+const ACT = Object.fromEntries(DATA.acts.map(a => [a.id, a]));
+const DAY = 86400000;
+const d2n = s => { const [y,m,d] = s.split('-').map(Number); return Math.round(Date.UTC(y,m-1,d)/DAY); };
+const n2d = n => new Date(n*DAY).toISOString().slice(0,10);
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const fmt = n => { const t = new Date(n*DAY); return `${String(t.getUTCDate()).padStart(2,'0')}-${MON[t.getUTCMonth()]}-${String(t.getUTCFullYear()).slice(2)}`; };
+const DD = d2n(DATA.dataDate);
+
+/* ---------- progress curves ---------- */
+const memo = new Map();
+function hist(a, n) {
+  if (!a.as) return 0;
+  const s = d2n(a.as); if (n < s) return 0;
+  const ent = Object.entries(a.d || {});
+  const sumD = ent.reduce((t, [, v]) => t + v, 0);
+  const base = Math.max(0, a.pct - sumD);
+  let e = ent.length ? Math.min(...ent.map(([d]) => d2n(d))) - 1 : (a.af ? d2n(a.af) : DD);
+  let v = e <= s ? base : base * Math.min(1, (n - s) / (e - s));
+  ent.forEach(([d, x]) => { if (d2n(d) <= n) v += x; });
+  return Math.min(1, v);
+}
+function actual(a, n) {
+  if (n <= DD) return hist(a, n);
+  const A0 = hist(a, DD); if (A0 >= 0.9999 || !a.f) return A0;
+  const s = Math.max(DD, a.s ? d2n(a.s) : DD), f = d2n(a.f);
+  if (n <= s) return A0; if (n >= f) return 1;
+  return A0 + (1 - A0) * (n - s) / (f - s);
+}
+function plan(a, n) {
+  if (!a.bs) return 0; const s = d2n(a.bs), f = d2n(a.bf);
+  if (n < s) return 0; if (n >= f) return 1; return (n - s + 1) / (f - s + 1);
+}
+
+/* ---------- scene ---------- */
+const cv = document.getElementById('cv');
+const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(2, devicePixelRatio));
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.localClippingEnabled = true;
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(38, 1, 0.5, 2000);
+const controls = new OrbitControls(camera, cv);
+controls.enableDamping = true; controls.maxPolarAngle = Math.PI * 0.495;
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8f80, 1.1));
+const sun = new THREE.DirectionalLight(0xffffff, 1.6);
+sun.position.set(-60, 110, 80); sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -90, right: 90, top: 70, bottom: -70, near: 10, far: 400 });
+scene.add(sun);
+
+const css = k => getComputedStyle(document.documentElement).getPropertyValue(k).trim();
+const cut = new THREE.Plane(new THREE.Vector3(0, 0, -1), 4.9);
+const CLIP = [];
+function mat(c, o = {}) { const m = new THREE.MeshStandardMaterial({ color: c, roughness: .85, metalness: 0, ...o }); CLIP.push(m); return m; }
+const M = {
+  done: mat(0x3f9b5a), now: mat(0x2f6fd6), fc: mat(0xd9a13b),
+  late: mat(0xd64545, { transparent: true, opacity: .55 }),
+  ghost: mat(0x8a96a0, { transparent: true, opacity: .07, depthWrite: false }),
+  dim: mat(0x9aa4ac, { transparent: true, opacity: .12, depthWrite: false }),
+};
+const F = { // finished-look materials
+  conc: mat(0xb9b6ae), conc2: mat(0xa7a49c), soil: mat(0x8b7356), steel: mat(0x58626b, { metalness: .4, roughness: .5 }),
+  clad: mat(0xd5d9dc, { roughness: .6 }), clad2: mat(0x9fb0bd, { roughness: .6 }), glass: mat(0x3b4f5e, { roughness: .2, metalness: .3 }),
+  roof: mat(0x7f8b95, { metalness: .3, roughness: .5 }), crane: mat(0xe0a526, { roughness: .5 }), pile: mat(0xcfcac0),
+  gis: mat(0xa9c0cf, { metalness: .5, roughness: .35 }), gis2: mat(0xd28a3a, { roughness: .5 }),
+};
+
+/* grid (m) — ITE-NT-GIS-8-01A */
+const GX = [['0',0],["1'",2.5],['1',7],['2',13],["3'",16.65],['3',20],['4',27],['5',34],['6',41],["6'",41.65],['7',48],['8',55],['9',62],['10',69],['11',76],['12',83],['13',90],['14',97],['15',99.85]];
+const GZ = [['D',0],['C',4],["C'",7],['B',10],['A',16],["A'",18.35]];
+const gx = Object.fromEntries(GX), gz = Object.fromEntries(GZ);
+const OX = 49.925, OZ = 9.175;
+const W = (x, z) => [x - OX, OZ - z];
+const XL = -0.2, XR = 100.05, ZF = -0.2, ZB = 18.55;
+const XS = GX.map(g => g[1]);
+const bays = (a, b) => { const c = [a, ...XS.filter(x => x > a + .05 && x < b - .05), b]; return c.slice(1).map((x, i) => [c[i], x]); };
+
+const EL = []; // {act, ord, meshes, fin}
+const root = new THREE.Group(); scene.add(root);
+let cur = null;
+function el(act, ord, fin) { cur = { act, ord, meshes: [], fin }; EL.push(cur); return cur; }
+function box(x0, x1, y0, y1, z0, z1, fin) {
+  const g = new THREE.BoxGeometry(Math.abs(x1 - x0), Math.abs(y1 - y0), Math.abs(z1 - z0));
+  const m = new THREE.Mesh(g, fin || cur.fin);
+  const [wx, wz] = W((x0 + x1) / 2, (z0 + z1) / 2);
+  m.position.set(wx, (y0 + y1) / 2, wz); m.castShadow = m.receiveShadow = true;
+  m.userData.fin = fin || cur.fin; cur.meshes.push(m); root.add(m); return m;
+}
+function cyl(x, z, y0, y1, r, fin) {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, y1 - y0, 10), fin);
+  const [wx, wz] = W(x, z); m.position.set(wx, (y0 + y1) / 2, wz); m.userData.fin = fin; cur.meshes.push(m); root.add(m); return m;
+}
+function slant(xa, za, ya, xb, zb, yb, w, t, fin) { // inclined flight from a to b
+  const [ax, az] = W(xa, za), [bx, bz] = W(xb, zb);
+  const A = new THREE.Vector3(ax, ya, az), B = new THREE.Vector3(bx, yb, bz);
+  const L = A.distanceTo(B);
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, t, L), fin);
+  m.position.copy(A).add(B).multiplyScalar(.5); m.lookAt(B); m.castShadow = true;
+  m.userData.fin = fin; cur.meshes.push(m); root.add(m); return m;
+}
+
+/* column grid: 16 main lines x rows A,B,C,D + left stair (grid 0) + right stair (grid 15) = 70 */
+const COLS = [];
+["1'",'1','2','3','4','5','6',"6'",'7','8','9','10','11','12','13','14'].forEach(g => ['D','C','B','A'].forEach(r => COLS.push({ x: gx[g], z: gz[r] })));
+["A'",'A','B'].forEach(r => COLS.push({ x: 0, z: gz[r] }));
+["D",'C',"C'"].forEach(r => COLS.push({ x: 99.85, z: gz[r] }));
+COLS.sort((a, b) => a.x - b.x || a.z - b.z);
+
+/* A4100 piles, A4110 footings */
+COLS.forEach(c => { el('A4100', c.x, F.pile); [[-.75,-.75],[.75,-.75],[-.75,.75],[.75,.75]].forEach(([dx, dz]) => cyl(c.x + dx, c.z + dz, -16, -1.8, .2, F.pile)); });
+COLS.forEach(c => { el('A4110', c.x, F.conc2); box(c.x - 1.3, c.x + 1.3, -1.8, -.85, c.z - 1.3, c.z + 1.3); box(c.x - .4, c.x + .4, -.85, -.45, c.z - .6, c.z + .6); });
+/* A4120 backfill */
+bays(XL, XR).forEach(([a, b]) => { el('A4120', a, F.soil); box(a, b, -2.0, -.48, ZF, ZB); });
+
+/* columns by storey */
+const colSegs = c => {
+  const S = [], x = c.x;
+  if (x === 99.85) { S.push([.2, 3.4, 'A4130'], [3.4, 13.5, 'A4140'], [13.5, 16.2, 'A4160'], [16.2, 18.85, 'A4170']); return S; }
+  S.push([.2, 3.4, 'A4130']);
+  if (x <= 41) S.push([3.4, 8.5, 'A4140'], [8.5, 13.5, 'A4150']); else S.push([3.4, 13.5, 'A4140']);
+  S.push([13.5, 16.2, 'A4160'], [16.2, 21.2, 'A4170'], [21.2, 26.2, 'A4180']);
+  if (x >= 13) S.push([26.2, 29.2, 'A4190']);
+  return S;
+};
+function slabLevel(act, y, x0, x1, z0, z1, beams = true) {
+  bays(x0, x1).forEach(([a, b]) => {
+    el(act, a + .01, F.conc); box(a, b, y - .2, y, z0, z1);
+    if (beams) {
+      GZ.filter(([, z]) => z >= z0 - .01 && z <= z1 + .01).forEach(([, z]) => box(a, b, y - .8, y - .2, z - .2, z + .2));
+      if (XS.some(x => Math.abs(x - a) < .01)) box(a - .2, a + .2, y - .8, y - .2, z0, z1);
+    }
+  });
+}
+/* A4130 ground: grade beams + slab +0.20 + lift pit */
+bays(XL, XR).forEach(([a, b]) => {
+  el('A4130', a + .02, F.conc);
+  GZ.forEach(([, z]) => box(a, b, -.5, 0, z - .2, z + .2));
+  if (XS.some(x => Math.abs(x - a) < .01)) box(a - .2, a + .2, -.5, 0, ZF, ZB);
+  box(a, b, 0, .2, ZF, ZB);
+});
+COLS.forEach(c => colSegs(c).forEach(([y0, y1, act]) => { el(act, c.x + .03, F.conc2); box(c.x - .3, c.x + .3, y0, y1, c.z - .5, c.z + .5); }));
+/* suspended slabs */
+slabLevel('A4140', 3.4, XL, XR, ZF, ZB);
+slabLevel('A4150', 8.5, 2.5, 41.65, ZF, 16.2);
+slabLevel('A4160', 13.5, XL, XR, ZF, ZB);
+slabLevel('A4170', 16.2, XL, XR, ZF, ZB);
+slabLevel('A4180', 21.2, XL, 13, ZF, ZB);
+slabLevel('A4190', 26.2, XL, 13, ZF, ZB);
+/* lift core (grid 2–3', row C–C') per storey */
+[[.2,3.4,'A4130'],[3.4,8.5,'A4140'],[8.5,13.5,'A4150'],[13.5,16.2,'A4160'],[16.2,21.2,'A4170'],[21.2,26.2,'A4180'],[26.2,29.2,'A4190']].forEach(([y0, y1, act]) => {
+  el(act, 13.5, F.conc); const x0 = 13.3, x1 = 15.8, z0 = 4.3, z1 = 6.8;
+  box(x0, x1, y0, y1, z0, z0 + .2); box(x0, x1, y0, y1, z1 - .2, z1); box(x0, x0 + .2, y0, y1, z0, z1);
+});
+/* A4200 roof structure */
+XS.filter(x => x >= 13 && x <= 97).forEach(x => { el('A4200', x, F.steel); box(x - .15, x + .15, 29.2, 30.4, ZF, ZB); });
+el('A4200', 13.2, F.steel); [ZF + .3, 4, 7, 10, 16, ZB - .3].forEach(z => box(13, 97, 30.2, 30.4, z - .1, z + .1));
+el('A4200', 13.4, F.conc); box(13.0, 15.8, 29.2, 31.9, 4.0, 7.0);
+el('A4200', 97.5, F.conc); box(97, XR, 18.65, 18.85, ZF, ZB);
+/* A4210 stairs + crane runway */
+function stairTower(act, x0, x1, z0, z1, levels) {
+  for (let i = 0; i < levels.length - 1; i++) {
+    const ya = levels[i], yb = levels[i + 1], ym = (ya + yb) / 2, xm = (x0 + x1) / 2;
+    el(act, x0 + i * .01, F.conc);
+    slant(x0 + .6, z0 + .8, ya, x0 + .6, z1 - 1.2, ym, 1.1, .2, F.conc);
+    box(x0, x1, ym - .15, ym, z1 - 1.2, z1, F.conc);
+    slant(x1 - .6, z1 - 1.2, ym, x1 - .6, z0 + .8, yb, 1.1, .2, F.conc);
+  }
+}
+stairTower('A4210', -.2, 2.5, 10.3, 18.3, [.2, 3.4, 8.5, 13.5, 16.2, 21.2, 26.2]);
+stairTower('A4210', 97.3, 99.8, -.1, 6.8, [.2, 3.4, 8.5, 13.5, 16.2]);
+el('A4210', 50, F.steel); [.4, 17.8].forEach(z => box(13, 97, 26.6, 27.2, z - .3, z + .3));
+
+/* A4300 external walls (bands bottom→top), A4340 openings */
+const top = x => x < 13 ? 26.2 : x < 97 ? 30.75 : 18.85;
+const bands = (x, open) => { const t = top(x); return [[open ? 3.4 : .2, 16.2], [16.2, t]].filter(([a, b]) => b > a + .1); };
+bays(XL, XR).forEach(([a, b]) => {
+  const mid = (a + b) / 2, open = mid > 16.65 && mid < 90;
+  bands(mid, open).forEach(([y0, y1], k) => {
+    el('A4300', k * 200 + a, k ? F.clad2 : F.clad);
+    box(a, b, y0, y1, ZF - .45, ZF - .25); box(a, b, y0, y1, ZB + .25, ZB + .45);
+  });
+  if (mid > 13 && mid < 97 && b - a > 3) {
+    el('A4340', a, F.glass);
+    [[21.0, 23.2], [9.4, 10.8]].forEach(([y0, y1]) => { box(a + 1, b - 1, y0, y1, ZF - .6, ZF - .45); box(a + 1, b - 1, y0, y1, ZB + .45, ZB + .6); });
+  }
+});
+[[XL, 26.2], [XR, 18.85]].forEach(([x, t], i) => GZ.slice(1).forEach(([, z], j) => {
+  const z0 = j ? GZ[j][1] : ZF;
+  [[.2, 16.2], [16.2, t]].forEach(([y0, y1], k) => { el('A4300', k * 200 + (i ? 99 : 0) + j * .01, k ? F.clad2 : F.clad); box(x - .1 + (i ? .2 : -.2), x + .1 + (i ? .2 : -.2), y0, y1, j ? z0 : ZF - .45, j === 4 ? ZB + .45 : z); });
+}));
+el('A4300', 213, F.clad2); box(12.9, 13.1, 26.2, 30.75, ZF, ZB);
+el('A4300', 297, F.clad2); box(96.9, 97.1, 18.85, 30.75, ZF, ZB);
+el('A4340', 91, F.steel); box(90.8, 96.2, .2, 5.2, ZF - .6, ZF - .45);
+/* A4310 roof sheet */
+bays(13, 97).forEach(([a, b]) => { el('A4310', a, F.roof); box(a, b, 30.45, 30.6, ZF - .4, ZB + .4); });
+/* A4520 cranes */
+[38, 72].forEach(x => { el('A4520', x, F.crane); box(x - .5, x + .5, 27.2, 28.2, .1, 18.1); box(x - 1.5, x + 1.5, 26.9, 27.2, .1, 1.2); box(x - 1.5, x + 1.5, 26.9, 27.2, 16.9, 18.1); });
+
+/* GIS equipment (illustrative, not schedule-linked) */
+const gis = new THREE.Group(); root.add(gis);
+function gbox(x0, x1, y0, y1, z0, z1, m) { const g = new THREE.Mesh(new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0), m); const [wx, wz] = W((x0 + x1) / 2, (z0 + z1) / 2); g.position.set(wx, (y0 + y1) / 2, wz); g.castShadow = true; gis.add(g); }
+for (let x = 46; x < 88; x += 3.4) { gbox(x, x + 1.8, 3.4, 6.2, 5.2, 8.6, F.gis); gbox(x + .2, x + 1.6, 6.2, 6.6, 6.2, 7.6, F.gis2); }
+for (let x = 19; x < 93; x += 4.6) { gbox(x, x + 2.4, 16.2, 20.6, 4.6, 9.4, F.gis); gbox(x + .3, x + 2.1, 20.6, 21.2, 6.2, 7.8, F.gis2); }
+
+/* ground with excavation opening */
+const GRS = new THREE.Shape(); GRS.moveTo(-160, -110); GRS.lineTo(160, -110); GRS.lineTo(160, 110); GRS.lineTo(-160, 110);
+const hole = new THREE.Path(); { const [a, b] = W(XL - .6, ZF - .6), [c, d] = W(XR + .6, ZB + .6); hole.moveTo(a, -b); hole.lineTo(c, -b); hole.lineTo(c, -d); hole.lineTo(a, -d); }
+GRS.holes.push(hole);
+const gMat = new THREE.MeshStandardMaterial({ color: 0x9aa58c, roughness: 1, transparent: true, opacity: 1 });
+const ground = new THREE.Mesh(new THREE.ShapeGeometry(GRS), gMat); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true;
+scene.add(ground);
+const pitMat = new THREE.MeshStandardMaterial({ color: 0x7b6650, roughness: 1, transparent: true });
+const pit = new THREE.Mesh(new THREE.BoxGeometry(XR - XL + 1.2, .1, ZB - ZF + 1.2), pitMat);
+pit.position.set(W((XL + XR) / 2, 0)[0], -2.05, W(0, (ZF + ZB) / 2)[1]); pit.receiveShadow = true; scene.add(pit);
+const road = new THREE.Mesh(new THREE.PlaneGeometry(220, 7), new THREE.MeshStandardMaterial({ color: 0x5f6468, roughness: .9 }));
+road.rotation.x = -Math.PI / 2; road.position.set(0, .02, OZ + 9); road.receiveShadow = true; scene.add(road);
+
+/* grid bubbles */
+function bubble(t, x, y, z) {
+  const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d');
+  g.fillStyle = '#ffffff'; g.beginPath(); g.arc(64, 64, 56, 0, 7); g.fill(); g.lineWidth = 6; g.strokeStyle = '#1b2730'; g.stroke();
+  g.fillStyle = '#1b2730'; g.font = '600 52px "JetBrains Mono",monospace'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(t, 64, 68);
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), depthTest: false }));
+  s.position.set(x, y, z); s.scale.set(2.2, 2.2, 1); s.renderOrder = 9; scene.add(s); return s;
+}
+const gridGrp = new THREE.Group(); scene.add(gridGrp);
+const lm = new THREE.LineDashedMaterial({ color: 0x33414c, dashSize: 1.2, gapSize: .6, transparent: true, opacity: .55 });
+GX.forEach(([t, x]) => { const [wx] = W(x, 0); const g = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(wx, .06, OZ + 4), new THREE.Vector3(wx, .06, -OZ - 1)]); const l = new THREE.Line(g, lm); l.computeLineDistances(); gridGrp.add(l); gridGrp.add(bubble(t, wx, .5, OZ + 5.6)); });
+GZ.forEach(([t, z]) => { const [, wz] = W(0, z); const g = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-OX - 4, .06, wz), new THREE.Vector3(OX + 1, .06, wz)]); const l = new THREE.Line(g, lm); l.computeLineDistances(); gridGrp.add(l); gridGrp.add(bubble(t, -OX - 5.6, .5, wz)); });
+
+CLIP.forEach(m => m.clippingPlanes = []);
+
+/* per-activity ordering */
+const BY = {};
+EL.forEach(e => (BY[e.act] ||= []).push(e));
+Object.values(BY).forEach(L => { L.sort((a, b) => a.ord - b.ord); L.forEach((e, i) => e.i = i); });
+
+/* ---------- UI state ---------- */
+const S = { n: DD, mode: 'act', per: '7', ghost: true, cut: false, x: false, gis: true, sel: null };
+const acts = DATA.acts;
+const n0 = d2n('2026-01-15');
+const nEnd = Math.max(...acts.map(a => d2n(a.f || a.bf || DATA.dataDate))) + 7;
+const slider = document.getElementById('slider');
+slider.min = n0; slider.max = nEnd; slider.value = DD;
+function placeDD() { const p = (DD - n0) / (nEnd - n0), w = slider.clientWidth; const x = 8 + p * (w - 16); document.getElementById('ddmark').style.left = x + 'px'; document.getElementById('ddlab').style.left = x + 'px'; }
+{ const T = document.getElementById('ticks'); const q = []; for (let k = 0; k <= 4; k++) q.push(`<span>${fmt(Math.round(n0 + (nEnd - n0) * k / 4))}</span>`); T.innerHTML = q.join(''); }
+
+const GROUPS = [['โครงสร้าง', ['A4100','A4110','A4120','A4130','A4140','A4150','A4160','A4170','A4180','A4190','A4200','A4210']], ['สถาปัตย์', ['A4300','A4310','A4320','A4330','A4340','A4350']], ['ระบบ', ['A4500','A4510','A4520','A4530','A4540']]];
+const short = s => s.replace(/\s*–\s*/g, ' – ').replace(/ incl\.| including/g, '').slice(0, 64);
+const list = document.getElementById('list');
+list.innerHTML = GROUPS.map(([g, ids]) => `<div class="grp">${g}</div>` + ids.filter(i => ACT[i]).map(i => `<div class="row" role="listitem" tabindex="0" data-id="${i}" title="${ACT[i].n.replace(/"/g, '')}${BY[i] ? '' : ' (ไม่แสดงในโมเดล)'}"><span class="id">${i}</span><span class="nm">${short(ACT[i].n)}</span><span class="pc" id="pc-${i}"></span><div class="bar"><div class="p" id="bp-${i}"></div><div class="a" id="ba-${i}"></div></div></div>`).join('')).join('');
+list.addEventListener('click', e => { const r = e.target.closest('.row'); if (!r) return; S.sel = S.sel === r.dataset.id ? null : r.dataset.id; list.querySelectorAll('.row').forEach(x => x.classList.toggle('sel', x.dataset.id === S.sel)); update(); });
+list.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } });
+document.getElementById('tog').onclick = e => { const s = document.getElementById('side'); s.classList.toggle('closed'); const o = !s.classList.contains('closed'); e.target.setAttribute('aria-expanded', o); e.target.textContent = o ? 'ซ่อน' : 'รายการ'; };
+if (innerWidth < 820) document.getElementById('tog').click();
+
+function periodStart(n) {
+  if (S.per === '7') return n - 6;
+  const t = new Date(n * DAY); return Math.round(Date.UTC(t.getUTCFullYear(), t.getUTCMonth(), 1) / DAY);
+}
+const cnt = (f, N) => Math.min(N, Math.floor(f * N + 1e-6));
+
+function legend() {
+  const L = { act: [['done', 'เสร็จก่อนช่วงนี้'], ['now', 'ทำในช่วงนี้'], ['fc', 'คาดการณ์ (หลัง Data date)']],
+    cmp: [['done', 'สร้างแล้ว'], ['now', 'สร้างในช่วงนี้'], ['late', 'ตามแผนควรเสร็จ แต่ยังไม่สร้าง']],
+    plan: [['done', 'แผน: เสร็จก่อนช่วงนี้'], ['now', 'แผน: ทำในช่วงนี้']], fin: [] }[S.mode];
+  const col = { done: '--done', now: '--now', fc: '--fc', late: '--late' };
+  document.getElementById('legend').innerHTML = L.map(([k, t]) => `<span><i style="background:var(${col[k]})"></i>${t}</span>`).join('') + (S.mode === 'fin' ? '<span>วัสดุตามจริงโดยประมาณ · เลื่อนไปวันเสร็จเพื่อดูอาคารสมบูรณ์</span>' : '');
+}
+
+function update() {
+  const n = +S.n, p0 = periodStart(n) - 1, sel = S.sel;
+  let built = 0, tot = 0, late = 0, wk = 0;
+  acts.forEach(a => {
+    const A = actual(a, n), P = plan(a, n);
+    document.getElementById('pc-' + a.id).textContent = `A ${(A * 100).toFixed(1)} · P ${(P * 100).toFixed(0)}`;
+    document.getElementById('ba-' + a.id).style.width = (A * 100) + '%';
+    document.getElementById('bp-' + a.id).style.width = (P * 100) + '%';
+    const L = BY[a.id]; if (!L) return;
+    const N = L.length;
+    const useP = S.mode === 'plan';
+    const nNow = cnt(useP ? P : A, N), nPrev = cnt(useP ? plan(a, p0) : actual(a, p0), N);
+    const nData = cnt(hist(a, Math.min(n, DD)), N), nPlan = cnt(P, N);
+    tot += N; built += nNow; wk += Math.max(0, nNow - nPrev); if (!useP) late += Math.max(0, nPlan - nNow);
+    L.forEach(e => {
+      let m, vis = true;
+      if (S.mode === 'fin') { vis = e.i < nNow; m = null; }
+      else if (e.i < nNow) m = (!useP && n > DD && e.i >= nData) ? M.fc : (e.i >= nPrev ? M.now : M.done);
+      else if (S.mode === 'cmp' && e.i < nPlan) m = M.late;
+      else { m = M.ghost; vis = S.ghost; }
+      if (sel && a.id !== sel) { m = M.dim; vis = vis || S.ghost; }
+      e.meshes.forEach(x => { x.visible = vis; x.material = m || x.userData.fin; x.castShadow = !m; });
+    });
+  });
+  // piles only meaningful below ground
+  BY.A4100.forEach(e => e.meshes.forEach(x => { if (!S.x) x.visible = false; }));
+  gis.visible = S.mode === 'fin' && S.gis && n >= d2n(ACT.A4170.f || '2099-01-01');
+  const bf = actual(ACT.A4130, n) >= .999;
+  gMat.opacity = S.x ? .25 : 1; gMat.depthWrite = !S.x; pitMat.opacity = S.x ? .2 : 1; pit.visible = !bf || S.x;
+  const ps = periodStart(n);
+  document.getElementById('date').innerHTML = `${fmt(n)}<small>${n === DD ? 'Data date' : n > DD ? 'คาดการณ์' : 'ย้อนหลัง'} · ช่วง ${fmt(ps)} – ${fmt(n)}</small>`;
+  document.getElementById('kp').innerHTML = `<span>ชิ้นส่วนในโมเดล <b>${built.toLocaleString()}</b> / ${tot.toLocaleString()}</span><span>ช่วงนี้ <b>+${wk}</b></span>` + (S.mode === 'plan' ? '' : `<span>ช้ากว่าแผน <b style="color:var(--late)">${late}</b> ชิ้น</span>`) + `<span>อาคารแล้วเสร็จ (คาด) <b>${fmt(d2n(ACT.A4350.f))}</b></span>`;
+  CLIP.forEach(m => { m.clippingPlanes = S.cut ? [cut] : []; m.needsUpdate = true; });
+  applyTheme();
+}
+
+/* theme → scene colours */
+function applyTheme() {
+  const fin = S.mode === 'fin';
+  scene.background = new THREE.Color(fin ? css('--sky') : css('--bg'));
+  M.done.color.set(css('--done')); M.now.color.set(css('--now')); M.fc.color.set(css('--fc')); M.late.color.set(css('--late')); M.ghost.color.set(css('--ghost'));
+  scene.fog = new THREE.Fog(scene.background, 260, 700);
+}
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+new MutationObserver(applyTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+/* controls */
+slider.oninput = () => { S.n = +slider.value; update(); };
+const seg = (id, key, fn) => document.getElementById(id).addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; document.querySelectorAll(`#${id} button`).forEach(x => x.setAttribute('aria-pressed', x === b)); S[key] = b.dataset[key === 'mode' ? 'm' : 'p']; fn && fn(); legend(); update(); });
+seg('mode', 'mode', () => { if (S.mode === 'fin' && S.n <= DD) { S.n = nEnd; slider.value = nEnd; } });
+seg('per', 'per');
+document.getElementById('view').addEventListener('click', e => { const b = e.target.closest('button'); if (b) fly(b.dataset.v); });
+document.getElementById('bDD').onclick = () => { S.n = DD; slider.value = DD; update(); };
+document.getElementById('bEnd').onclick = () => { S.n = nEnd; slider.value = nEnd; update(); };
+[['cGhost', 'ghost'], ['cCut', 'cut'], ['cX', 'x'], ['cGis', 'gis']].forEach(([id, k]) => document.getElementById(id).onchange = e => { S[k] = e.target.checked; update(); });
+let timer = null;
+document.getElementById('play').onclick = e => {
+  if (timer) { clearInterval(timer); timer = null; e.target.textContent = '▶ เล่น'; return; }
+  if (S.n >= nEnd) S.n = n0;
+  e.target.textContent = '❚❚ หยุด';
+  timer = setInterval(() => { S.n = Math.min(nEnd, S.n + 7); slider.value = S.n; update(); if (S.n >= nEnd) { clearInterval(timer); timer = null; e.target.textContent = '▶ เล่น'; } }, 140);
+};
+
+/* camera */
+const VIEWS = { iso: [[-78, 52, 96], [0, 8, 0]], front: [[0, 18, 128], [0, 13, 0]], end: [[-92, 20, 4], [0, 14, 0]], top: [[0, 150, 6], [0, 0, 0]] };
+let anim = null;
+function fly(v) {
+  const [p, t] = VIEWS[v]; const P0 = camera.position.clone(), T0 = controls.target.clone(), P1 = new THREE.Vector3(...p), T1 = new THREE.Vector3(...t);
+  const k = innerWidth < 820 ? 1.35 : 1; P1.sub(T1).multiplyScalar(k).add(T1);
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) { camera.position.copy(P1); controls.target.copy(T1); return; }
+  const t0 = performance.now(); anim = () => { const u = Math.min(1, (performance.now() - t0) / 700), e = u * u * (3 - 2 * u); camera.position.lerpVectors(P0, P1, e); controls.target.lerpVectors(T0, T1, e); if (u >= 1) anim = null; };
+}
+const [ip, it] = VIEWS.iso; camera.position.set(...ip); controls.target.set(...it);
+if (innerWidth < 820) { camera.position.sub(controls.target).multiplyScalar(1.35).add(controls.target); }
+
+/* export (only where the page may download: GitHub Pages) */
+if (/github\.io$/.test(location.hostname)) {
+  document.getElementById('exp').hidden = false;
+  const save = (blob, name) => { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); };
+  document.getElementById('bPng').onclick = () => { renderer.render(scene, camera); cv.toBlob(b => save(b, `NSR4239_GIS_${n2d(S.n)}.png`)); };
+  document.getElementById('bGlb').onclick = async () => { const { GLTFExporter } = await import('three/addons/exporters/GLTFExporter.js'); new GLTFExporter().parse(root, r => save(new Blob([r]), `NSR4239_GIS_${n2d(S.n)}.glb`), err => console.error(err), { binary: true, onlyVisible: true }); };
+}
+
+function size() { const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); placeDD(); }
+addEventListener('resize', size); size();
+legend(); update();
+renderer.setAnimationLoop(() => { anim && anim(); controls.update(); renderer.render(scene, camera); });
+window.__ready = true;
+</script>
