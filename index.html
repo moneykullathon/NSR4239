@@ -2250,7 +2250,7 @@ function loadJson(txt) {
     applyMode(); renderPriv();
     if (PRIV_MISSING) toast('Contract values, rates and notes are not on this device yet – Import your master file once (Restore private data)', 7000);
   })();
-  requestAnimationFrame(() => { const gn = $('#ganttp'); gn.scrollLeft = Math.max(0, renderGantt.X(d2n(P.dataDate)) - gn.clientWidth * 0.35); });
+  requestAnimationFrame(() => { const gn = $('#ganttp'); if (!renderGantt.X) return; gn.scrollLeft = Math.max(0, renderGantt.X(d2n(P.dataDate)) - gn.clientWidth * 0.35); });
 })();
 
 </script>
